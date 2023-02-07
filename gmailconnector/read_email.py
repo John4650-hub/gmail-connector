@@ -134,7 +134,12 @@ class ReadEmail:
             dict:
             A dictionary of sender, subject and received time.
         """
+
         original_email = message_from_bytes(response_part[1])
+        foo = original_email.as_string()
+        original_email.add_header("body","\n".join(foo.split("\n")[80:]))
+        
+
         if received := original_email.get('Received'):
             date = received.split(';')[-1].strip()
         else:
@@ -145,6 +150,7 @@ class ReadEmail:
             datetime_obj = datetime.strptime(date, "%a, %d %b %Y %H:%M:%S -0800 (PST)")
         else:
             datetime_obj = datetime.now()
+        body = make_header(decode_header(original_email['body']))
         sender = make_header(decode_header((original_email['From']).split(' <')[0]))
         sub = make_header(decode_header(original_email['Subject'])) \
             if original_email['Subject'] else None
@@ -159,13 +165,13 @@ class ReadEmail:
             receive = local_time.strftime("Yesterday, at %I:%M %p")
         else:
             receive = local_time.strftime("on %A, %B %d, at %I:%M %p")
-        return {'sender': str(sender).strip(), 'subject': str(sub).strip(), 'datetime': receive.strip()}
+        return {"body":str(body).strip(),'sender': str(sender).strip(), 'subject': str(sub).strip(), 'datetime': receive.strip()}
 
     def read_email(self, messages: list or str) -> str:
         """Prints unread emails one by one after getting user confirmation.
 
         Args:
-            Takes the encoded message list as an argument. This is the body of the ``instantiate`` method.
+            Takes the encoded message lis t as an argument. This is the body of the ``instantiate`` method.
 
         Returns:
             Response:
